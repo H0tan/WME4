@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+        <meta charset="UTF-8">
+        <title>WME Course Exercise D3.js and Leaflet &bull; Solution Team ??</title>
+        <meta name="description" content="">
+        <meta name="author" content="??, ??">
+        <meta name="keywords" content="Web and Multimedia Engineering, Course, Exercise">
+
+        <link rel="stylesheet" href="html5reset.css" type="text/css">
+        <link rel="stylesheet" href='https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic' type='text/css'>
+        <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="leaflet/leaflet.css" type="text/css" >
+        <link rel="stylesheet" href="leaflet-extramarkers/css/leaflet.extra-markers.min.css">
+        <link rel="stylesheet" href="style.css" type="text/css">
+        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+        <style> /* set the CSS */
+
+        .bar { fill: grey; }
+        #drop {
+         padding: 50px;
+        }
+
+         </style>
+</head>
+
+<body>
+
+<header id="sticky_header">
+        <nav class="container clearfix" role="navigation">
+                <a class="logo" href="/">world_data</a>
+                <ul id="main_nav" class="clearfix">
+                        <li>
+                                <a href=""><i class="fa fa-list-ul"></i>A1 - Table</a>
+                        </li>
+                        <li>
+                                <a href=""><i class="fa fa-list-ul"></i>A2 - Parse</a>
+                        </li>
+                        <li>
+                                <a href=""><i class="fa fa-list-ul"></i>A2 - Save</a>
+                        </li>
+                        <li>
+                                <a href=""><i class="fa fa-list-ul"></i>A2 - Print</a>
+                        </li>
+                        <li>
+                                <a href=""><i class="fa fa-list-ul"></i>A3 - REST</a>
+                        </li>
+                        <li>
+                                <a href=""><i class="fa fa-list-ul"></i>A4 - Vis</a>
+                        </li>
+                </ul>
+                <a href="#" id="pull"><i class="fa fa-list-ul"></i></a>
+        </nav>
+</header>
+<br>
+<br>
+<br>
+<div id='drop'></div>
+<div class="container">
+<script>
+var prop = ["birth_rate_per_1000", "cell_phones_per_100", "children_per_woman", "electricity_consumption_per_capita", "gdp_per_capita", "gdp_per_capita_growth", "inflation_annual", "internet_user_per_100", "life_expectancy", "military_expenditure_percent_of_gdp", "gps_lat", "gps_long"];
+var br = [];
+var cname = [];
+d3.csv("world_data.csv", function(error, data) {
+
+
+                data.forEach(function(d) {
+                    br.push(d.birth_rate_per_1000);
+                    cname.push(d.name);
+
+                 });
+                  alert(br);
+                  alert(cname[0]);
+            });
+
+
+            var makeVis = function(br, cname) {
+                // Define dimensions of vis
+                var margin = { top: 30, right: 50, bottom: 30, left: 50 },
+                    width  = 550 - margin.left - margin.right,
+                    height = 250 - margin.top  - margin.bottom;
+
+                // Make x scale
+                var xScale = d3.scale.ordinal()
+                    .domain(prop)
+                    .rangeRoundBands([0, width], 0.1);
+
+                // Make y scale, the domain will be defined on bar update
+                var yScale = d3.scale.linear()
+                    .range([height, 0]);
+
+                // Create canvas
+                var canvas = d3.select("container")
+                  .append("svg")
+                    .attr("width",  width  + margin.left + margin.right)
+                    .attr("height", height + margin.top  + margin.bottom)
+                  .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                // Make x-axis and add to canvas
+                var xAxis = d3.svg.axis()
+                    .scale(xScale)
+                    .orient("bottom");
+
+                canvas.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(xAxis);
+
+                // Make y-axis and add to canvas
+                var yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .orient("left");
+
+                var yAxisHandleForUpdate = canvas.append("g")
+                    .attr("class", "y axis")
+                    .call(yAxis);
+
+                yAxisHandleForUpdate.append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 6)
+                    .attr("dy", ".71em")
+                    .style("text-anchor", "end")
+                    .text("Value");
+
+                var updateBars = function(data) {
+                    // First update the y-axis domain to match data
+                    yScale.domain( d3.extent(data) );
+                    yAxisHandleForUpdate.call(yAxis);
+
+                    var bars = canvas.selectAll(".bar").data(data);
+
+                    // Add bars for new data
+                    bars.enter()
+                      .append("rect")
+                        .attr("class", "bar")
+                        .attr("x", function(d,i) { return xScale( cname[i] ); })
+                        .attr("width", xScale.rangeBand())
+                        .attr("y", function(d,i) { return yScale(d); })
+                        .attr("height", function(d,i) { return height - yScale(d); });
+
+                    // Update old ones, already have x / width from before
+                    bars
+                        .transition().duration(250)
+                        .attr("y", function(d,i) { return yScale(d); })
+                        .attr("height", function(d,i) { return height - yScale(d); });
+
+                    // Remove old ones
+                    bars.exit().remove();
+                };
+
+                // Handler for dropdown value change
+                var dropdownChange = function() {
+                    var newPeop = d3.select(this).property('value'),
+                        newData = data.inf;
+
+                    updateBars(newData);
+                };
+
+                // Get names of cereals, for dropdown
+                var prop = Object.keys(con).sort();
+
+                var dropdown = d3.select("container")
+                    .insert("select", "svg")
+                    .on("change", dropdownChange);
+
+                dropdown.selectAll("option")
+                    .data(prop)
+                  .enter().append("option")
+                    .attr("value", function (d) { return d; })
+                    .text(function (d) {
+                        return d[0].toUpperCase() + d.slice(1,d.length); // capitalize 1st letter
+                    });
+
+                var initialData = con[ prop[0] ];
+                updateBars(initialData);
+            };
+</script>
+</div>
+
+<footer>
+        <div class="container">
+                <div>
+                        <p>
+                                Copyright &copy; 2017 world_data<br>
+                                Course exercise <strong>D3.js and Leaflet</strong> of the lecture Web and Multimedia Engineering.
+                        </p>
+                </div>
+                <div class="right">
+                        <p>
+                                This solution has been created by:<br>
+                                Jane Doe (s1234567) and John Doe (s7654321) - Team ??
+                        </p>
+                </div>
+        </div>
+</footer>
+
+<script type="text/javascript" src="jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="d3.min.js"></script>
+<script type="text/javascript" src="leaflet/leaflet.js"></script>
+<script type="text/javascript" src="leaflet-extramarkers/js/leaflet.extra-markers.min.js"></script>
+
+
+</body>
+</html>

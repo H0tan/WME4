@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+        <meta charset="UTF-8">
+        <title>WME Course Exercise D3.js and Leaflet &bull; Solution Team ??</title>
+        <meta name="description" content="">
+        <meta name="author" content="??, ??">
+        <meta name="keywords" content="Web and Multimedia Engineering, Course, Exercise">
+
+        <link rel="stylesheet" href="html5reset.css" type="text/css">
+        <link rel="stylesheet" href='https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic' type='text/css'>
+        <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="leaflet/leaflet.css" type="text/css" >
+        <link rel="stylesheet" href="leaflet-extramarkers/css/leaflet.extra-markers.min.css">
+        <link rel="stylesheet" href="style.css" type="text/css">
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+
+        <style>
+
+.rectangle {
+        fill: steelblue;
+}
+.rectangle:hover {
+        fill: orange;
+}
+.axis {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+</style>
+</head>
+
+<body>
+
+<header id="sticky_header">
+        <nav class="container clearfix" role="navigation">
+                <a class="logo" href="/">world_data</a>
+                <ul id="main_nav" class="clearfix">
+                        <li>
+                                <a href=""><i class="fa fa-list-ul"></i>A1 - Table</a>
+                        </li>
+                        <li>
+                                <a href=""><i class="fa fa-list-ul"></i>A2 - Parse</a>
+                        </li>
+                        <li>
+                                <a href=""><i class="fa fa-list-ul"></i>A2 - Save</a>
+                        </li>
+                        <li>
+                                <a href=""><i class="fa fa-list-ul"></i>A2 - Print</a>
+                        </li>
+                        <li>
+                                <a href=""><i class="fa fa-list-ul"></i>A3 - REST</a>
+                        </li>
+                        <li>
+                                <a href=""><i class="fa fa-list-ul"></i>A4 - Vis</a>
+                        </li>
+                </ul>
+                <a href="#" id="pull"><i class="fa fa-list-ul"></i></a>
+        </nav>
+</header>
+<br>
+<br>
+<br>
+<br>
+<div id='drop'></div>
+<div class="container"></div>
+<script>
+
+var countries = [];
+
+
+var margin = {top: 80, right: 180, bottom: 80, left: 180},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("world_data.csv", function(error, data){
+
+         data.forEach(function(d) {
+                    countries.push(d.name);
+                });
+        // filter year
+        var data = data;
+        console.log(data);
+        console.log(data[1]);
+        // Get every column value
+        var elements = Object.keys(data[0])
+                .filter(function(d){
+                        return ((d != "name"));
+                });
+        console.log(elements[1]);
+        var selection = elements[0];
+
+       var x = d3.scaleBand()
+    .rangeRound([0, width])
+    .padding(0.1);
+
+         x.domain(countries);
+
+        var y = d3.scaleLinear()
+                        .domain([0, d3.max(data, function(d){
+                                return +d[selection];
+                        })])
+                        .range([height, 0]);
+
+
+
+        var xAxis = d3.axisBottom()
+                .scale(x);
+
+        var yAxis = d3.axisLeft()
+                .scale(y);
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis)
+            .selectAll("text")
+            .style("font-size", "12px")
+              .style("text-anchor", "start")
+              .attr("dx", "1em")
+              .attr("dy", "0.5em")
+              .attr("transform", "rotate(90)" );
+
+
+         svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
+
+        svg.selectAll("rectangle")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("class","rectangle")
+                .attr("width", 20)
+                .attr("height", function(d){
+                        return height - y(+d[selection]);
+                })
+                .attr("x", function(d, i){
+                        return (width / data.length) * i ;
+                })
+                .attr("y", function(d){
+                        return y(+d[selection]);
+                })
+                .append("title")
+                .text(function(d){
+                        return countries + " : " + d[selection];
+                });
+
+        var selector = d3.select("#drop")
+            .append("select")
+            .attr("id","dropdown")
+            .on("change", function(d){
+                selection = document.getElementById("dropdown");
+
+                
+                y.domain([0, d3.max(data, function(d){
+                                return +d[selection.value];})]);
+
+                yAxis.scale(y);
+
+
+
+                d3.selectAll(".rectangle")
+                           .transition()
+                    .attr("height", function(d){
+                                        return height - y(+d[selection.value]);
+                                })
+                                .attr("x", function(d, i){
+                                        return (width / data.length) * i ;
+                                })
+                                .attr("y", function(d){
+                                        return y(+d[selection.value]);
+                                })
+
+                           .select("title")
+                           .text(function(d){
+                                   return countries + " : " + d[selection.value];
+                           });
+
+                   d3.selectAll("g.y.axis")
+                           .transition()
+                           .call(yAxis);
+
+         });
+
+    selector.selectAll("option")
+      .data(elements)
+      .enter().append("option")
+      .attr("value", function(d){
+        return d;
+      })
+      .text(function(d){
+        return d;
+      })
+
+
+});
+
+</script>
+
+<footer>
+        <div class="container">
+                <div>
+                        <p>
+                                Copyright &copy; 2017 world_data<br>
+                                Course exercise <strong>D3.js and Leaflet</strong> of the lecture Web and Multimedia Engineering.
+                        </p>
+                </div>
+                <div class="right">
+                        <p>
+                                This solution has been created by:<br>
+                                Jane Doe (s1234567) and John Doe (s7654321) - Team ??
+                        </p>
+                </div>
+        </div>
+</footer>
+
+<script type="text/javascript" src="jquery-3.2.1.min.js"></script>
+
+<script type="text/javascript" src="leaflet/leaflet.js"></script>
+<script type="text/javascript" src="leaflet-extramarkers/js/leaflet.extra-markers.min.js"></script>
+
+
+</body>
+</html>
