@@ -39,18 +39,36 @@
 }
 
 #drop {
+  padding-top: 100px;
   padding-left: 400px;
 }
 
 #drop2 {
-  padding-left: 400px;
-  padding-top: 20px;
   float: left;
+  position: absolute;
+  top: 500px;
+  left: 400px;
+
 }
 
 #chart {
   float: left;
 }
+
+#chart2 {
+  float: left;
+}
+
+#map {
+  position: absolute;
+  float: right;
+  left: 950px;
+
+}
+
+footer {
+  padding-top: 1000px;
+  }
 
 </style>
 </head>
@@ -83,16 +101,13 @@
                 <a href="#" id="pull"><i class="fa fa-list-ul"></i></a>
         </nav>
 </header>
-<br>
-<br>
-<br>
-<br>
 <div id='drop'></div>
 <div id='chart'></div>
 
 <div class="container"></div>
 <div id='map'></div>
-
+<div id='drop2'></div>
+<div id='chart2'></div>
 <script type='text/javascript' src='../world_data.json'></script>
 <script>
 var map;
@@ -130,8 +145,8 @@ var plotlayers=[];
 var countries = [];
 
 
-var margin = {top: 50, right: 180, bottom: 80, left: 400},
-    width = 1000 - margin.left - margin.right,
+var margin = {top: 50, right: 180, bottom: 150, left: 400},
+    width = 1100 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
 var svg = d3.select("#chart").append("svg")
@@ -225,7 +240,7 @@ d3.csv("world_data.csv", function(error, data){
                 yAxis.scale(y);
 
 
-                d3.selectAll(".rectangle")
+                svg.selectAll(".rectangle")
                            .transition()
                     .attr("height", function(d){
                                         return height - y(+d[selection.value]);
@@ -239,7 +254,7 @@ d3.csv("world_data.csv", function(error, data){
 
 
 
-                   d3.selectAll("g.y.axis")
+                   svg.selectAll("g.y.axis")
                            .transition()
                            .call(yAxis);
 
@@ -258,13 +273,7 @@ d3.csv("world_data.csv", function(error, data){
 
 });
 
-
-
-var margin2 = {top: 50, right: 180, bottom: 80, left: 400},
-    width = 1100 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
-
-var svg2 = d3.select("body").append("svg")
+var svg2 = d3.select("#chart2").append("svg")
         .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
         .append("g")
@@ -272,43 +281,45 @@ var svg2 = d3.select("body").append("svg")
 
 d3.csv("world_data.csv", function(error, data){
 
-
+         data.forEach(function(d) {
+                    countries.push(d.name);
+                });
         // filter year
-        var data = data;
+        var data2 = data;
         console.log(data);
         console.log(data[1]);
         // Get every column value
-        var elements = Object.keys(data[0])
+        var elements2 = Object.keys(data2[0])
                 .filter(function(d){
                         return ((d != "name"));
                 });
-        console.log(elements[1]);
-        var selection = elements[0];
+        console.log(elements2[1]);
+        var selection2 = elements2[0];
 
-       var x = d3.scaleBand()
+       var x2 = d3.scaleBand()
     .rangeRound([0, width])
     .padding(0.1);
 
-         x.domain(countries);
+         x2.domain(countries);
 
-        var y = d3.scaleLinear()
+        var y2 = d3.scaleLinear()
                         .domain([0, d3.max(data, function(d){
-                                return +d[selection];
+                                return +d[selection2];
                         })])
                         .range([height, 0]);
 
 
 
-        var xAxis = d3.axisBottom()
-                .scale(x);
+        var xAxis2 = d3.axisBottom()
+                .scale(x2);
 
-        var yAxis = d3.axisLeft()
-                .scale(y);
+        var yAxis2 = d3.axisLeft()
+                .scale(y2);
 
-        svg.append("g")
+        svg2.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + height + ")")
-            .call(xAxis)
+            .call(xAxis2)
             .selectAll("text")
             .style("font-size", "12px")
               .style("text-anchor", "start")
@@ -319,62 +330,62 @@ d3.csv("world_data.csv", function(error, data){
 
 
 
-         svg.append("g")
+         svg2.append("g")
             .attr("class", "y axis")
-            .call(yAxis);
+            .call(yAxis2);
 
-        svg.selectAll("rectangle")
+        svg2.selectAll("rectangle")
                 .data(data)
                 .enter()
                 .append("rect")
                 .attr("class","rectangle")
                 .attr("width", 19.5)
                 .attr("height", function(d){
-                        return height - y(+d[selection]);
+                        return height - y2(+d[selection2]);
                 })
                 .attr("x", function(d, i){
                         return 20 * i ;
                 })
                 .attr("y", function(d){
-                        return y(+d[selection]);
+                        return y2(+d[selection2]);
                 })
                 .append("title")
 
 
         var selector = d3.select("#drop2")
             .append("select")
-            .attr("id","dropdown")
+            .attr("id","dropdown2")
             .on("change", function(d){
-                selection = document.getElementById("dropdown");
+                selection = document.getElementById("dropdown2");
 
-                y.domain([0, d3.max(data, function(d){
+                y2.domain([0, d3.max(data, function(d){
                                 return +d[selection.value];})]);
 
-                yAxis.scale(y);
+                yAxis2.scale(y2);
 
 
-                d3.selectAll(".rectangle")
+                svg2.selectAll(".rectangle")
                            .transition()
                     .attr("height", function(d){
-                                        return height - y(+d[selection.value]);
+                                        return height - y2(+d[selection.value]);
                                 })
                                 .attr("x", function(d, i){
                                         return 20 * i ;
                                 })
                                 .attr("y", function(d){
-                                        return y(+d[selection.value]);
+                                        return y2(+d[selection.value]);
                                 })
 
 
 
-                   d3.selectAll("g.y.axis")
+                   svg2.selectAll("g.y.axis")
                            .transition()
-                           .call(yAxis);
+                           .call(yAxis2);
 
          });
 
     selector.selectAll("option")
-      .data(elements)
+      .data(elements2)
       .enter().append("option")
       .attr("value", function(d){
         return d;
