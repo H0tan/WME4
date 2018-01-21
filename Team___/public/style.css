@@ -38,8 +38,8 @@ a:hover {
 
 .container {
   margin: 0 auto;
-  width: 1170px;
-  max-width: 100%;
+  width: 50%;
+  max-width: 50%;
 }
 
 div.container section {
@@ -152,6 +152,11 @@ footer > .container > div.right {
   float: right;
   text-align: right;
 }
+#map { height: 400px;
+	width: 40%;
+	float:right;
+	margin-right: 5%;
+	margin-top: 3%; }
 
 /* Media Queries */
 
