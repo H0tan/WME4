@@ -31,8 +31,12 @@
 .axis path,
 .axis line {
   fill: none;
-  stroke: #000;
+  stroke: black;
   shape-rendering: crispEdges;
+}
+
+#drop {
+  padding-left: 400px;
 }
 </style>
 </head>
@@ -76,9 +80,9 @@
 var countries = [];
 
 
-var margin = {top: 80, right: 180, bottom: 80, left: 180},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+var margin = {top: 50, right: 180, bottom: 80, left: 400},
+    width = 1100 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 
 var svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -135,6 +139,8 @@ d3.csv("world_data.csv", function(error, data){
               .attr("transform", "rotate(90)" );
 
 
+
+
          svg.append("g")
             .attr("class", "y axis")
             .call(yAxis);
@@ -144,20 +150,18 @@ d3.csv("world_data.csv", function(error, data){
                 .enter()
                 .append("rect")
                 .attr("class","rectangle")
-                .attr("width", 20)
+                .attr("width", 19.5)
                 .attr("height", function(d){
                         return height - y(+d[selection]);
                 })
                 .attr("x", function(d, i){
-                        return (width / data.length) * i ;
+                        return 20 * i ;
                 })
                 .attr("y", function(d){
                         return y(+d[selection]);
                 })
                 .append("title")
-                .text(function(d){
-                        return countries + " : " + d[selection];
-                });
+
 
         var selector = d3.select("#drop")
             .append("select")
@@ -165,7 +169,7 @@ d3.csv("world_data.csv", function(error, data){
             .on("change", function(d){
                 selection = document.getElementById("dropdown");
 
-                
+
                 y.domain([0, d3.max(data, function(d){
                                 return +d[selection.value];})]);
 
@@ -179,16 +183,13 @@ d3.csv("world_data.csv", function(error, data){
                                         return height - y(+d[selection.value]);
                                 })
                                 .attr("x", function(d, i){
-                                        return (width / data.length) * i ;
+                                        return 20 * i ;
                                 })
                                 .attr("y", function(d){
                                         return y(+d[selection.value]);
                                 })
 
-                           .select("title")
-                           .text(function(d){
-                                   return countries + " : " + d[selection.value];
-                           });
+
 
                    d3.selectAll("g.y.axis")
                            .transition()
